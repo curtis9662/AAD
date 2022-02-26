@@ -1,0 +1,2 @@
+#Get Members in a specific group
+Get-ADGroupMember -identity "Enter Group name from list"
