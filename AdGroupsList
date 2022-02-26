@@ -1,0 +1,2 @@
+#List all AD groups simply
+Get-ADGroup -filter * | sort name | select name
