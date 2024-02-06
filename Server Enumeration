@@ -45,3 +45,73 @@ foreach ($server in $servers) {
     }
 }
 ##########
+
+
+########## Updated Version ##########
+
+
+# Set script execution policy (if needed)
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+# Function to check LDAP signing status and get additional information
+function Check-LDAPSigning {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$ComputerName
+    )
+
+    Write-Verbose "Checking LDAP signing on $ComputerName..."
+
+    # 1. Check WMI LdapClientSigningRequirements property
+    $wmiResult = Get-WmiObject -Class Win32_OperatingSystem -ComputerName $ComputerName -ErrorAction SilentlyContinue
+    if ($wmiResult) {
+        if ($wmiResult.LdapClientSigningRequirements -ne 2) {
+            Write-Verbose "WMI indicates LDAP signing may not be supported."
+            return [PSCustomObject]@{
+                ComputerName = $ComputerName
+                OSVersion = $wmiResult.Version
+                LDAPSigned = $false
+            }
+        }
+    }
+
+    # 2. Check Group Policy and registry
+    if (-not (Get-GPO -ListEffectiveGPO -Computer $ComputerName | Where-Object { $_.DisplayName -like "*LDAP Signing*"})) {
+        Write-Verbose "No LDAP signing GPO found."
+        $regResult = Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\Ldap\ClientSigningRequirements" -ComputerName $ComputerName -ErrorAction SilentlyContinue
+        if ($regResult -and $regResult.LdapClientSigningRequirements -ne 2) {
+            Write-Verbose "Registry indicates LDAP signing may not be supported."
+            return [PSCustomObject]@{
+                ComputerName = $ComputerName
+                OSVersion = $wmiResult.Version
+                LDAPSigned = $false
+            }
+        }
+    }
+
+    Write-Verbose "LDAP signing appears to be configured."
+    return [PSCustomObject]@{
+        ComputerName = $ComputerName
+        OSVersion = $wmiResult.Version
+        LDAPSigned = $true
+    }
+}
+
+# Get list of servers from Active Directory
+$servers = Get-ADComputer -Filter '(OperatingSystem -like "*Server*")'
+
+# Enumerate servers, check LDAP signing, and build object array
+$serverInfo = @()
+foreach ($server in $servers) {
+    $serverInfo += Check-LDAPSigning -ComputerName $server.Name
+}
+
+# Sort object array by OS Version and convert to a table
+$resultsTable = $serverInfo | Sort-Object -Property OSVersion | ConvertTo-Html -AutoSize
+
+# Write table output to console
+Write-Output $resultsTable
+
+# Alternative: Write to a file as CSV
+#$resultsTable | ConvertTo-Csv -NoTypeInformation | Out-File "ldap_signing_report.csv" -Encoding UTF8
+
