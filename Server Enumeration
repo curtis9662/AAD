@@ -127,3 +127,24 @@ foreach ($dc in $domainControllers) {
     }
 }
 
+##########
+
+Import-Module ActiveDirectory
+
+# Get a list of domain controllers
+$domainControllers = Get-ADDomainController -Filter *
+
+# Enumerate domain controllers and connected servers
+foreach ($dc in $domainControllers) {
+    # Check LDAP signing on the domain controller itself
+    Get-WmiObject -Class Win32_OperatingSystem -ComputerName $dc.Name | Select-Object Name, LdapClientSigningRequirements
+
+    # Get a list of servers connected to the domain controller
+    $connectedServers = Get-ADComputer -Filter * -SearchBase "LDAP://$($dc.HostName)"
+
+    foreach ($server in $connectedServers) {
+        # Check LDAP signing on the connected server
+        Get-WmiObject -Class Win32_OperatingSystem -ComputerName $server.Name -ErrorAction SilentlyContinue | Select-Object Name, LdapClientSigningRequirements
+    }
+}
+
