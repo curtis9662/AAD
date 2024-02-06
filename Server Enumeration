@@ -104,6 +104,11 @@ WEB016: LDAP signing may not be supported.
 WEBDEV02: LDAP signing may not be supported.
 WEBQA02: LDAP signing may not be supported.
 WEBSTG02: LDAP signing may not be supported.
+
+Checking LDAP signing on domain controller DC014...
+LDAP signing is not required or not configured on DC014.
+Checking LDAP signing on domain controller DC015...
+LDAP signing is not required or not configured on DC015.
 ##########
 
 
