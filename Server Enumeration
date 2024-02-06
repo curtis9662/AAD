@@ -48,70 +48,61 @@ foreach ($server in $servers) {
 
 
 ########## Updated Version ##########
-
-
-# Set script execution policy (if needed)
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-
-# Function to check LDAP signing status and get additional information
-function Check-LDAPSigning {
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$ComputerName
-    )
-
-    Write-Verbose "Checking LDAP signing on $ComputerName..."
-
-    # 1. Check WMI LdapClientSigningRequirements property
-    $wmiResult = Get-WmiObject -Class Win32_OperatingSystem -ComputerName $ComputerName -ErrorAction SilentlyContinue
-    if ($wmiResult) {
-        if ($wmiResult.LdapClientSigningRequirements -ne 2) {
-            Write-Verbose "WMI indicates LDAP signing may not be supported."
-            return [PSCustomObject]@{
-                ComputerName = $ComputerName
-                OSVersion = $wmiResult.Version
-                LDAPSigned = $false
-            }
-        }
-    }
-
-    # 2. Check Group Policy and registry
-    if (-not (Get-GPO -ListEffectiveGPO -Computer $ComputerName | Where-Object { $_.DisplayName -like "*LDAP Signing*"})) {
-        Write-Verbose "No LDAP signing GPO found."
-        $regResult = Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\Ldap\ClientSigningRequirements" -ComputerName $ComputerName -ErrorAction SilentlyContinue
-        if ($regResult -and $regResult.LdapClientSigningRequirements -ne 2) {
-            Write-Verbose "Registry indicates LDAP signing may not be supported."
-            return [PSCustomObject]@{
-                ComputerName = $ComputerName
-                OSVersion = $wmiResult.Version
-                LDAPSigned = $false
-            }
-        }
-    }
-
-    Write-Verbose "LDAP signing appears to be configured."
-    return [PSCustomObject]@{
-        ComputerName = $ComputerName
-        OSVersion = $wmiResult.Version
-        LDAPSigned = $true
-    }
-}
-
-# Get list of servers from Active Directory
-$servers = Get-ADComputer -Filter '(OperatingSystem -like "*Server*")'
-
-# Enumerate servers, check LDAP signing, and build object array
-$serverInfo = @()
-foreach ($server in $servers) {
-    $serverInfo += Check-LDAPSigning -ComputerName $server.Name
-}
-
-# Sort object array by OS Version and convert to a table
-$resultsTable = $serverInfo | Sort-Object -Property OSVersion | ConvertTo-Html -AutoSize
-
-# Write table output to console
-Write-Output $resultsTable
-
-# Alternative: Write to a file as CSV
-#$resultsTable | ConvertTo-Csv -NoTypeInformation | Out-File "ldap_signing_report.csv" -Encoding UTF8
+DC014: LDAP signing may not be supported.
+RDS01: LDAP signing may not be supported.
+WEB016: LDAP signing may not be supported.
+KT02: LDAP signing may not be supported.
+GPD04: LDAP signing may not be supported.
+CPST03: LDAP signing may not be supported.
+SQL007: LDAP signing may not be supported.
+JOB003: LDAP signing may not be supported.
+WEB001: LDAP signing may not be supported.
+WEBSTG02: LDAP signing may not be supported.
+JOBSTG02: LDAP signing may not be supported.
+SQLSTG02: LDAP signing may not be supported.
+CPSTSTG01: LDAP signing may not be supported.
+CPSTQA01: LDAP signing may not be supported.
+CPSTDEV01: LDAP signing may not be supported.
+SQLQA02: LDAP signing may not be supported.
+WEBQA02: LDAP signing may not be supported.
+JOBQA02: LDAP signing may not be supported.
+NAP02: LDAP signing may not be supported.
+WEBDEV02: LDAP signing may not be supported.
+JOBDEV02: LDAP signing may not be supported.
+SQLDEV02: LDAP signing may not be supported.
+BP01: LDAP signing may not be supported.
+DUB01: LDAP signing may not be supported.
+PS01: LDAP signing may not be supported.
+KRN01: LDAP signing may not be supported.
+PAX01: LDAP signing may not be supported.
+DC015: LDAP signing may not be supported.
+BP01: LDAP signing may not be supported.
+CPST03: LDAP signing may not be supported.
+CPSTDEV01: LDAP signing may not be supported.
+CPSTQA01: LDAP signing may not be supported.
+CPSTSTG01: LDAP signing may not be supported.
+DC014: LDAP signing may not be supported.
+DC015: LDAP signing may not be supported.
+DUB01: LDAP signing may not be supported.
+GPD04: LDAP signing may not be supported.
+JOB003: LDAP signing may not be supported.
+JOBDEV02: LDAP signing may not be supported.
+JOBQA02: LDAP signing may not be supported.
+JOBSTG02: LDAP signing may not be supported.
+KRN01: LDAP signing may not be supported.
+KT02: LDAP signing may not be supported.
+NAP02: LDAP signing may not be supported.
+PAX01: LDAP signing may not be supported.
+PS01: LDAP signing may not be supported.
+RDS01: LDAP signing may not be supported.
+SQL007: LDAP signing may not be supported.
+SQLDEV02: LDAP signing may not be supported.
+SQLQA02: LDAP signing may not be supported.
+SQLSTG02: LDAP signing may not be supported.
+WEB001: LDAP signing may not be supported.
+WEB016: LDAP signing may not be supported.
+WEBDEV02: LDAP signing may not be supported.
+WEBQA02: LDAP signing may not be supported.
+WEBSTG02: LDAP signing may not be supported.
+PS C:\>
 
