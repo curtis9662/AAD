@@ -1,0 +1,47 @@
+###CJONES Servers that do accept LDAP Signing###
+
+# Set script execution policy (if needed)
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+# Function to check LDAP signing status for a server
+function Check-LDAPSigning {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$ComputerName
+    )
+
+    Write-Verbose "Checking LDAP signing on $ComputerName..."
+
+    # 1. Check WMI LdapClientSigningRequirements property
+    $wmiResult = Get-WmiObject -Class Win32_OperatingSystem -ComputerName $ComputerName -ErrorAction SilentlyContinue
+    if ($wmiResult) {
+        if ($wmiResult.LdapClientSigningRequirements -ne 2) {
+            Write-Verbose "WMI indicates LDAP signing may not be supported."
+            return $true
+        }
+    }
+
+    # 2. Check Group Policy and registry
+    if (-not (Get-GPO -ListEffectiveGPO -Computer $ComputerName | Where-Object { $_.DisplayName -like "*LDAP Signing*"})) {
+        Write-Verbose "No LDAP signing GPO found."
+        $regResult = Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\Ldap\ClientSigningRequirements" -ComputerName $ComputerName -ErrorAction SilentlyContinue
+        if ($regResult -and $regResult.LdapClientSigningRequirements -ne 2) {
+            Write-Verbose "Registry indicates LDAP signing may not be supported."
+            return $true
+        }
+    }
+
+    Write-Verbose "LDAP signing appears to be configured."
+    return $false
+}
+
+# Get list of servers from Active Directory
+$servers = Get-ADComputer -Filter '(OperatingSystem -like "*Server*")'
+
+# Enumerate servers and check LDAP signing status
+foreach ($server in $servers) {
+    if (Check-LDAPSigning -ComputerName $server.Name) {
+        Write-Output "$($server.Name): LDAP signing may not be supported."
+    }
+}
+##########
