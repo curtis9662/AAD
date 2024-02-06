@@ -104,5 +104,26 @@ WEB016: LDAP signing may not be supported.
 WEBDEV02: LDAP signing may not be supported.
 WEBQA02: LDAP signing may not be supported.
 WEBSTG02: LDAP signing may not be supported.
-PS C:\>
+##########
+
+
+# Get list of domain controllers from Active Directory
+$domainControllers = Get-ADDomainController -Filter *
+
+# Loop through each domain controller
+foreach ($dc in $domainControllers) {
+    Write-Host "Checking LDAP signing on domain controller $($dc.Name)..."
+
+    # Query WMI remotely for LDAP signing status
+    $wmiResult = Get-WmiObject -Class Win32_OperatingSystem -ComputerName $dc.Name -ErrorAction SilentlyContinue
+    if ($wmiResult) {
+        if ($wmiResult.LdapClientSigningRequirements -eq 2) {
+            Write-Output "LDAP signing is required on $($dc.Name)."
+        } else {
+            Write-Output "LDAP signing is not required or not configured on $($dc.Name)."
+        }
+    } else {
+        Write-Warning "Failed to query WMI on $($dc.Name)."
+    }
+}
 
