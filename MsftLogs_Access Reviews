@@ -1,0 +1,37 @@
+😀 This is gr8 for "Access Reviews" 🧾
+
+let InactivePeriod = 29d;
+SigninLogs
+| where TimeGenerated < ago(InactivePeriod)
+| summarize LastSignIn = max(TimeGenerated) by UserPrincipalName, UserType
+| where LastSignIn < ago(InactivePeriod)
+|project UserPrincipalName, LastSignIn, UserType
+
+________________________________
+
+SigninLogs
+| where TimeGenerated < ago(1m)
+| summarize LastSignIn = min(TimeGenerated) by UserPrincipalName, UserType, AppDisplayName, IPAddress, Identity, ClientAppUsed, CreatedDateTime
+| where LastSignIn < ago(29d)
+|project UserPrincipalName, UserType, AppDisplayName, IPAddress, Identity, ClientAppUsed, CreatedDateTime
+ 
+_______________________________________________
+ 
+SigninLogs
+| where TimeGenerated < ago(10d)
+| summarize LastSignIn = min(TimeGenerated) by UserPrincipalName, UserType, AppDisplayName, IPAddress, Identity, ClientAppUsed, CreatedDateTime
+| where LastSignIn > ago(29d)
+|project UserPrincipalName, UserType, AppDisplayName, IPAddress, Identity, ClientAppUsed, CreatedDateTime
+ 
+_______________________
+SigninLogs
+| where TimeGenerated >= ago(30d)
+| summarize LastSignIn = max(TimeGenerated) by UserPrincipalName, UserType, AppDisplayName, IPAddress, Identity, ClientAppUsed, CreatedDateTime, SignInIdentifier, Resource, RiskLevelDuringSignIn
+| where LastSignIn >= ago(60d)
+|project CreatedDateTime, UserPrincipalName, UserType, AppDisplayName, IPAddress, Identity, ClientAppUsed, SignInIdentifier, Resource, RiskLevelDuringSignIn
+// Explanation:
+InactivePeriod = 90d: Defines the threshold of 90 days of inactivity.
+summarize LastSignIn = max(TimeGenerated) by UserPrincipalName: For each user, we retrieve the most recent sign-in (the max() function returns the latest timestamp for that user).
+where LastSignIn < ago(InactivePeriod): Filters to include only users who haven't signed in for 90 days or more.
+project UserPrincipalName, LastSignIn: Displays only the user's principal name and their most recent sign-in timestamp.
+This query will return a list of users who haven't signed in in the last 90+ days.
