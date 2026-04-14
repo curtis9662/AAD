@@ -52,6 +52,8 @@ In our enterprise (any secure 🛡🔱) environment, we *do not* want to use the
 # Installs the WSL engine and Virtual Machine Platform without downloading an unapproved Linux distro - CJONES
 wsl.exe --install --no-distribution
 ~~~
+<img width="986" height="608" alt="image" src="https://github.com/user-attachments/assets/8a29ac77-827f-4dd3-8553-cdcf5fc017c4" />
+
 
 ### 2. Update WSL to the Latest 2026 Core Version
 
@@ -59,6 +61,7 @@ wsl.exe --install --no-distribution
 # Ensures we have the latest security patches and features directly from Microsoft - CJONES
 wsl.exe --update
 ~~~
+<img width="849" height="70" alt="image" src="https://github.com/user-attachments/assets/68fed3a1-69e2-4b3e-9740-349d7178dc35" />
 
 ---
 
@@ -114,6 +117,7 @@ Now that the foundation is hardened, we will deploy a specific, approved Linux d
 ~~~powershell
 wsl.exe --list --online
 ~~~
+<img width="594" height="491" alt="image" src="https://github.com/user-attachments/assets/e4858033-d98a-408a-8095-f08f04364657" />
 
 ### 2. Install an Approved Distro (e.g., Ubuntu-24.04)
 
@@ -121,6 +125,18 @@ wsl.exe --list --online
 # Specify the exact distribution required by your enterprise baseline - CJONES
 wsl.exe --install -d Ubuntu-24.04
 ~~~
+<img width="822" height="51" alt="image" src="https://github.com/user-attachments/assets/dc9b6dcc-913a-473b-ace6-9b4250f607bd" />
+
+# ⚠⚠⚠⚠ RESTART YOUR SYSTEM ⚠⚠⚠⚠ #
+```
+cd..
+cls
+shutdown -r -f -t 10
+```
+<img width="599" height="338" alt="image" src="https://github.com/user-attachments/assets/4611b3d3-af4b-4d0e-ad50-e3aff9f340cd" />
+
+
+
 
 ### 3. Enforce a Non-Root Default User
 
